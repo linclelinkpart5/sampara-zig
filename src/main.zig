@@ -13,18 +13,18 @@ fn equil(comptime S: type) S {
 }
 
 test "equilibrium samples" {
-    inline for (1..129) |i| {
-        const ti = std.builtin.Type{ .Int = std.builtin.Type.Int{
-            .bits = i,
+    inline for (1..129) |b| {
+        const ib = std.builtin.Type{ .Int = std.builtin.Type.Int{
+            .bits = b,
             .signedness = .signed,
         } };
-        try testing.expectEqual(equil(@Type(ti)), 0);
+        try testing.expectEqual(equil(@Type(ib)), 0);
 
-        const tu = std.builtin.Type{ .Int = std.builtin.Type.Int{
-            .bits = i,
+        const ub = std.builtin.Type{ .Int = std.builtin.Type.Int{
+            .bits = b,
             .signedness = .unsigned,
         } };
-        try testing.expectEqual(equil(@Type(tu)), (1 << (i - 1)));
+        try testing.expectEqual(equil(@Type(ub)), (1 << (b - 1)));
     }
 
     try testing.expectEqual(equil(f16), 0.0);
