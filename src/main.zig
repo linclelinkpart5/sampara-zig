@@ -8,6 +8,13 @@ fn equil(comptime S: type) S {
             .unsigned => (1 << (info.bits - 1)),
         },
         .Float => 0.0,
+        .Array => |info| blk: {
+            if (info.sentinel != null) {
+                @compileError("unsupported frame type");
+            }
+
+            break :blk [_]info.child{equil(info.child)} ** info.len;
+        },
         else => @compileError("unsupported sample type"),
     };
 }
