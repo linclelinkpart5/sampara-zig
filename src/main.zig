@@ -1,22 +1,19 @@
 const std = @import("std");
 const testing = std.testing;
 
-fn equil(comptime S: type) S {
+fn try_equil(comptime S: type) ?S {
     return switch (@typeInfo(S)) {
         .Int => |info| switch (info.signedness) {
             .signed => 0,
             .unsigned => (1 << (info.bits - 1)),
         },
         .Float => 0.0,
-        .Array => |info| blk: {
-            if (info.sentinel != null) {
-                @compileError("unsupported frame type");
-            }
-
-            break :blk [_]info.child{equil(info.child)} ** info.len;
-        },
-        else => @compileError("unsupported sample type"),
+        else => null,
     };
+}
+
+fn equil(comptime S: type) S {
+    return comptime try_equil(S) orelse @compileError("unsupported sample type");
 }
 
 test "equilibrium samples" {
