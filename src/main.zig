@@ -1,19 +1,21 @@
 const std = @import("std");
 const testing = std.testing;
 
-fn try_equil(comptime S: type) ?S {
-    return switch (@typeInfo(S)) {
+fn try_equil(comptime S: type) !S {
+    return comptime switch (@typeInfo(S)) {
         .Int => |info| switch (info.signedness) {
             .signed => 0,
             .unsigned => (1 << (info.bits - 1)),
         },
         .Float => 0.0,
-        else => null,
+        else => error.InvalidSampleType,
     };
 }
 
 fn equil(comptime S: type) S {
-    return comptime try_equil(S) orelse @compileError("unsupported sample type");
+    return comptime try_equil(S) catch |err| switch (err) {
+        error.InvalidSampleType => @compileError("unsupported sample type: " ++ @typeName(S)),
+    };
 }
 
 test "equilibrium samples" {
@@ -34,4 +36,6 @@ test "equilibrium samples" {
     try testing.expectEqual(equil(f16), 0.0);
     try testing.expectEqual(equil(f32), 0.0);
     try testing.expectEqual(equil(f64), 0.0);
+    // try testing.expectEqual(equil(bool), true);
+    // try testing.expectEqual(equil([8]i8), .{ 0, 0, 0, 0, 0, 0, 0, 0 });
 }
